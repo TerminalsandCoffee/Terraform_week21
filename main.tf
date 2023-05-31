@@ -20,13 +20,13 @@ resource "aws_launch_configuration" "example" {
 
   # Apache Installation User Data Script
   user_data = <<-EOF
-              #!/bin/bash
-              yum update -y
-              yum install -y httpd
-              systemctl start httpd
-              systemctl enable httpd
-              echo "Hello from Terraform" > /var/www/html/index.html
-              EOF
+    #!/bin/bash
+    sudo yum update -y
+    sudo yum install -y httpd
+    sudo systemctl start httpd
+    sudo systemctl enable httpd
+    echo "<h1>Hello from $(hostname -f)</h1>" > /var/www/html/index.html
+    EOF
 
   lifecycle {
     create_before_destroy = true
