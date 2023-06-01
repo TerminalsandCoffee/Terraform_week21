@@ -1,11 +1,11 @@
 variable "region" {
   description = "The region to deploy the resources"
-  default = "us-west-1"
+  default = "us-east-1"
 }
 
 variable "image_id" {
   description = "The image id for the launch configuration"
-  default = "ami-0bef6cc322bfff646" # You might want to replace this with a more recent AMI
+  default = "ami-0bef6cc322bfff646" 
 }
 
 variable "instance_type" {

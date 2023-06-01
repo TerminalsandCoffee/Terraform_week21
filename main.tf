@@ -12,11 +12,12 @@ terraform {
 }
 
 # Launch Configuration
-resource "aws_launch_configuration" "example" {
-  image_id      = "ami-0c94855ba95c574c8" # Amazon Linux 2 AMI (HVM), SSD Volume Type
+resource "aws_launch_configuration" "Apache_Bootstrap" {
+  image_id      = "ami-0bef6cc322bfff646" # Amazon Linux 2 AMI 
   instance_type = "t2.micro"
   key_name      = var.key_name
   security_groups = [aws_security_group.sg.id]
+  associate_public_ip_address = true
 
   # Apache Installation User Data Script
   user_data = <<-EOF
@@ -34,7 +35,7 @@ resource "aws_launch_configuration" "example" {
 }
 
 # Auto Scaling Group
-resource "aws_autoscaling_group" "example" {
+resource "aws_autoscaling_group" "terraform_autoscaling_group" {
   vpc_zone_identifier  = [aws_subnet.subnet1.id, aws_subnet.subnet2.id]
   launch_configuration = aws_launch_configuration.example.id
   min_size             = 2
@@ -43,15 +44,15 @@ resource "aws_autoscaling_group" "example" {
 
   tag {
     key                 = "Name"
-    value               = "example-asg"
+    value               = "terraform_autoscaling_group"
     propagate_at_launch = true
   }
 }
 
 # Security Group
-resource "aws_security_group" "sg" {
+resource "aws_security_group" "terraform_sg" {
   name        = "allow_http"
-  description = "Allow inbound HTTP traffic"
+  description = "Allow inbound HTTP, HTTPS, and SSH traffic"
 
   ingress {
     from_port   = 80
@@ -59,7 +60,30 @@ resource "aws_security_group" "sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+  
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
+  
+
 
 # Default VPC and Subnets
 data "aws_vpc" "default" {
