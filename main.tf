@@ -2,6 +2,7 @@ provider "aws" {
   region = var.region
 }
 
+
 # Security Group
 resource "aws_security_group" "terraform_sg" {
   name        = "allow_http"
@@ -37,22 +38,25 @@ resource "aws_security_group" "terraform_sg" {
   }
 }
 
-# Launch Configuration
+# EC2 Configuration
 resource "aws_launch_configuration" "Apache_Bootstrap" {
-  image_id                    = "ami-0bef6cc322bfff646" # Amazon Linux 2 AMI 
+  image_id                    = var.image_id # Amazon Linux 2 AMI 
   instance_type               = "t2.micro"
-  key_name                    = var.key_name
   security_groups             = [aws_security_group.terraform_sg.id]
   associate_public_ip_address = true
 
   # Apache Installation User Data Script
   user_data = <<-EOF
     #!/bin/bash
-    sudo yum update -y
-    sudo yum install -y httpd
+    sudo su
+    sudo yum update
+
+    # apache install, enable, and status check
+    sudo yum -y install httpd
     sudo systemctl start httpd
     sudo systemctl enable httpd
-    echo "<h1>Hello from $(hostname -f)</h1>" > /var/www/html/index.html
+    sudo systemctl status httpd
+    sudo systemctl restart httpd
     EOF
 
   lifecycle {
@@ -88,4 +92,30 @@ resource "aws_subnet" "subnet1" {
 resource "aws_subnet" "subnet2" {
   vpc_id     = aws_vpc.my_vpc.id
   cidr_block = "10.0.2.0/24" # Unique CIDR block for subnet2
+}
+
+# Internet Gateway
+resource "aws_internet_gateway" "terraform_asg_gateway" {
+  vpc_id = aws_vpc.my_vpc.id
+}
+
+# Route Table
+resource "aws_route_table" "terraform_asg_rt" {
+  vpc_id = aws_vpc.my_vpc.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.terraform_asg_gateway.id
+  }
+}
+
+# Subnet Association
+resource "aws_route_table_association" "terraform_asg_subnet_association" {
+  subnet_id      = aws_subnet.subnet1.id
+  route_table_id = aws_route_table.terraform_asg_rt.id
+}
+
+resource "aws_route_table_association" "terraform_asg_subnet_association_2" {
+  subnet_id      = aws_subnet.subnet2.id
+  route_table_id = aws_route_table.terraform_asg_rt.id
 }

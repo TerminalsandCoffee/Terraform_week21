@@ -35,7 +35,7 @@ variable "bucket_name" {
 
 variable "key_name" {
   description = "The pem key for this weeks project"
-  default     = "Week21"
+  default     = "Week21.pem"
 }
 
 variable "cidr_block" {
@@ -43,3 +43,4 @@ variable "cidr_block" {
   description = "Variable for VPC CIDR block"
   default     = "10.0.0.0/16"
 }
+
