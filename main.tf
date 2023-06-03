@@ -45,10 +45,9 @@ resource "aws_launch_configuration" "Apache_Bootstrap" {
   security_groups             = [aws_security_group.terraform_sg.id]
   associate_public_ip_address = true
 
-  # Apache Installation User Data Script
+  # Apache BootStrap
   user_data = <<-EOF
     #!/bin/bash
-    sudo su
     sudo yum update
 
     # apache install, enable, and status check
